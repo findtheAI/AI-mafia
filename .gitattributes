@@ -1,0 +1,24 @@
+# 줄바꿈 통일: 저장소에는 항상 LF로 저장
+* text=auto eol=lf
+
+# Windows 전용 스크립트는 CRLF 유지
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+*.ps1  text eol=crlf
+
+# 바이너리 파일 (diff/줄바꿈 변환 안 함)
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.webp binary
+*.pdf  binary
+*.zip  binary
+*.mp3  binary
+*.mp4  binary
+*.wav  binary
+*.woff binary
+*.woff2 binary
+*.ttf  binary
+*.otf  binary
