@@ -38,6 +38,7 @@ build/
 .cache/
 coverage/
 *.tsbuildinfo
+next-env.d.ts
 
 # ===== AI agent local files =====
 .claude/settings.local.json
