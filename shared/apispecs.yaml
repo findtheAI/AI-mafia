@@ -1,0 +1,130 @@
+---
+openapi: 3.0.0
+info:
+  title: AI Mafia API
+  version: 1.1.0
+  description: 방 생성, 방 참가, 메시지 전송까지 구현되어있습니다.
+paths:
+  /api/room/create:
+    post:
+      summary: 방 생성 즉 호스트
+      operationId: makeRoom
+      responses:
+        "201":
+          description: 방 생성 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  roomCode:
+                    type: string
+                    example: A3F9K2
+                  players:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: number
+                          example: 1
+                        nickname:
+                          type: string
+                          example: Alex
+                        isHost:
+                          type: boolean
+                          example: true
+        "400":
+          description: 방 생성 실패
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  error:
+                    type: string
+  /api/room/join:
+    post:
+      summary: 방 참가
+      operationId: joinRoom
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - roomCode
+              properties:
+                roomCode:
+                  type: string
+      responses:
+        "200":
+          description: 방 참가 성공.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  roomCode:
+                    type: string
+                  roomId:
+                    type: string
+                  players:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: p1
+                        nickname:
+                          type: string
+                        isHost:
+                          type: boolean
+        "404":
+          description: 코드에 해당하는 방이 없음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: Invalid room code or room does not exist.
+x-websocket-events:
+  transport: WebSockets (/socket.io/)
+  connectionQuery: ?roomCode=방코드&nickname=닉네임
+  clientToServer:
+    chatSend:
+      event: chat:send
+      payload:
+        roomCode: 방코드
+        sender: 닉네임
+        message: 메시지
+  serverToClient:
+    chatReceive:
+      event: chat:receive
+      payload:
+        sender: 닉네임
+        message: 메시지
+    playerJoined:
+      event: room:playerJoined
+      payload:
+        nickname: 닉네임
+        playersCount: 2
+        players:
+          - id: p1
+            nickname: 플레이어1
+          - id: p2
+            nickname: 플레이어2
