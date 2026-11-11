@@ -70,8 +70,8 @@ router.post('/join', (req, res) => {
 
     return res.json({
         success: true,
-        roomCode: room.roomCode,
-        players: room.players
+        players: room.players,
+        nickname: nickname
     });
 });
 
