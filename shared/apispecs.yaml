@@ -2,7 +2,7 @@
 openapi: 3.0.0
 info:
   title: AI Mafia API
-  version: 1.1.0
+  version: 1.2.0
   description: 방 생성, 방 참가, 메시지 전송까지 구현되어있습니다.
 paths:
   /api/room/create:
@@ -124,7 +124,7 @@ x-websocket-events:
         nickname: 닉네임
         playersCount: 2
         players:
-          - id: p1
+          - id: 1
             nickname: 플레이어1
-          - id: p2
+          - id: 2
             nickname: 플레이어2
