@@ -1,5 +1,5 @@
+// 방 생성 및 참가에 관련된 이벤트를 핸들링한다
 import { Router } from 'express';
-import { Socket } from 'socket.io';
 
 const router = Router();
 export const activeRooms = new Map();
@@ -23,6 +23,7 @@ router.post('/create', (req, res) => {
     };
 
     activeRooms.set(roomCode, newRoom);
+    console.log(activeRooms)
 
     // 3. 성공 리스폰스 및 데이터 반환
     return res.status(201).json({
