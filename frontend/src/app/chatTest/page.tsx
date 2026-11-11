@@ -41,8 +41,7 @@ export default function ChatTestPage() {
       if (data.success) {
         setCurrentRoom(data);
         setRoomCodeInput(data.roomCode);
-        const hostPlayer = data.players.find((p: any) => p.isHost);
-        connectSocket(data.roomCode, hostPlayer.nickname);
+        connectSocket(data.roomCode, data.nickname);
       }
     } catch (err) {
       console.error('Failed to create room', err);

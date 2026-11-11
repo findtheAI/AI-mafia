@@ -29,7 +29,8 @@ router.post('/create', (req, res) => {
     return res.status(201).json({
         success: true,
         roomCode: newRoom.roomCode,
-        players: newRoom.players
+        players: newRoom.players,
+        nickname: nickname
     });
 });
 
