@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>너 AI지? - 방 만들기</title>
+<style>
+  :root {
+    --bg: #f5f5f7; --card: #ffffff; --text: #1d1d1f; --muted: #6e6e73;
+    --line: #d2d2d7; --accent: #5b4bdb; --accent-text: #ffffff; --danger: #d92d20;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #151517; --card: #202024; --text: #f2f2f5; --muted: #9a9aa3;
+            --line: #3a3a42; --accent: #8b7dff; --accent-text: #10101a; --danger: #ff6b5e; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font-family: -apple-system, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
+  main { max-width: 440px; margin: 0 auto; padding: 32px 16px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 20px; font-size: 14px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
+  label { display: block; font-size: 13px; color: var(--muted); margin: 14px 0 6px; }
+  label:first-child { margin-top: 0; }
+  input, select { width: 100%; padding: 11px 12px; font-size: 16px; color: var(--text);
+                  background: var(--bg); border: 1px solid var(--line); border-radius: 10px; }
+  button { width: 100%; margin-top: 18px; padding: 12px; font-size: 16px; font-weight: 600;
+           color: var(--accent-text); background: var(--accent); border: 0; border-radius: 10px; cursor: pointer; }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  button.ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); margin-top: 0; width: auto; padding: 10px 14px; font-size: 14px; }
+  .error { color: var(--danger); font-size: 14px; margin-top: 12px; min-height: 1em; }
+  .code { font-size: 34px; letter-spacing: 6px; font-weight: 700; text-align: center; margin: 4px 0 14px; }
+  .linkrow { display: flex; gap: 8px; align-items: center; }
+  .linkrow input { font-size: 13px; }
+  .count { display: flex; justify-content: space-between; align-items: baseline; margin: 20px 0 8px; }
+  .count strong { font-size: 15px; }
+  .count span { color: var(--muted); font-size: 13px; }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1px solid var(--line);
+       border-radius: 10px; margin-bottom: 8px; }
+  li.empty { color: var(--muted); border-style: dashed; justify-content: center; }
+  .badge { font-size: 11px; padding: 2px 7px; border-radius: 99px; background: var(--accent); color: var(--accent-text); }
+  .badge.me { background: transparent; color: var(--muted); border: 1px solid var(--line); }
+  .hint { color: var(--muted); font-size: 12px; margin-top: 10px; text-align: center; }
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+const app = document.getElementById('app');
+let poller = null;
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+async function api(path, body) {
+  const options = body
+    ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
+    : undefined;
+  const res = await fetch(path, options);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error((data.error && data.error.message) || '요청에 실패했어요.');
+  return data;
+}
+
+// 탭마다 따로 저장해서, 새 탭을 열면 다른 플레이어로 입장해볼 수 있어요.
+function saveSession(code, player) {
+  try { sessionStorage.setItem('room:' + code, JSON.stringify(player)); } catch (e) {}
+}
+function loadSession(code) {
+  try { return JSON.parse(sessionStorage.getItem('room:' + code)); } catch (e) { return null; }
+}
+function stopPolling() { if (poller) { clearInterval(poller); poller = null; } }
+
+function head(title, sub) {
+  return `<h1>${esc(title)}</h1><p class="sub">${esc(sub)}</p>`;
+}
+
+function renderHome() {
+  document.title = '너 AI지? - 방 만들기';
+  app.innerHTML = head('너 AI지?', 'AI가 섞인 마피아 게임 방을 만들어요') + `
+    <div class="card">
+      <label for="nick">닉네임 (1~12자)</label>
+      <input id="nick" maxlength="12" placeholder="예: minsu" autofocus>
+      <label for="max">최대 인원</label>
+      <select id="max">
+        <option>4</option><option selected>5</option><option>6</option>
+      </select>
+      <button id="create">방 만들기</button>
+      <div class="error" id="err"></div>
+    </div>`;
+  const nick = document.getElementById('nick');
+  const btn = document.getElementById('create');
+  const err = document.getElementById('err');
+  async function create() {
+    err.textContent = '';
+    btn.disabled = true;
+    try {
+      const { room, player } = await api('/api/rooms', {
+        nickname: nick.value,
+        maxPlayers: Number(document.getElementById('max').value),
+      });
+      saveSession(room.code, player);
+      history.pushState({}, '', '/invite/' + room.code);
+      renderLobby(room, player);
+    } catch (e) {
+      err.textContent = e.message;
+      btn.disabled = false;
+    }
+  }
+  btn.addEventListener('click', create);
+  nick.addEventListener('keydown', (e) => { if (e.key === 'Enter') create(); });
+}
+
+function renderJoin(room) {
+  document.title = '초대받았어요 - 너 AI지?';
+  app.innerHTML = head('초대받았어요!', `방 ${room.code}에 입장해요`) + `
+    <div class="card">
+      <div class="count"><strong>현재 인원</strong><span>${room.playerCount} / ${room.maxPlayers}명</span></div>
+      <ul>${room.players.map((p) => `<li>${esc(p.nickname)}${p.isHost ? ' <span class="badge">방장</span>' : ''}</li>`).join('')}</ul>
+      <label for="nick">내 닉네임 (1~12자)</label>
+      <input id="nick" maxlength="12" placeholder="예: younghee" autofocus>
+      <button id="join">입장하기</button>
+      <div class="error" id="err"></div>
+    </div>`;
+  const nick = document.getElementById('nick');
+  const btn = document.getElementById('join');
+  const err = document.getElementById('err');
+  async function join() {
+    err.textContent = '';
+    btn.disabled = true;
+    try {
+      const data = await api(`/api/rooms/${room.code}/join`, { nickname: nick.value });
+      saveSession(data.room.code, data.player);
+      renderLobby(data.room, data.player);
+    } catch (e) {
+      err.textContent = e.message;
+      btn.disabled = false;
+    }
+  }
+  btn.addEventListener('click', join);
+  nick.addEventListener('keydown', (e) => { if (e.key === 'Enter') join(); });
+}
+
+function renderLobby(room, me) {
+  stopPolling();
+  document.title = `대기실 ${room.code} - 너 AI지?`;
+  const link = `${location.origin}/invite/${room.code}`;
+  app.innerHTML = head('대기실', '링크를 친구에게 보내서 초대하세요') + `
+    <div class="card">
+      <div class="code">${esc(room.code)}</div>
+      <div class="linkrow">
+        <input id="link" readonly value="${esc(link)}">
+        <button class="ghost" id="copy">복사</button>
+      </div>
+      <div class="count"><strong>참가자</strong><span id="count"></span></div>
+      <ul id="players"></ul>
+      <button id="start" disabled>게임 시작 (준비 중)</button>
+      <div class="hint">참가자 목록은 2초마다 자동으로 갱신돼요</div>
+      <div class="error" id="err"></div>
+    </div>`;
+
+  function paint(r) {
+    document.getElementById('count').textContent = `${r.playerCount} / ${r.maxPlayers}명`;
+    const rows = r.players.map((p) =>
+      `<li>${esc(p.nickname)}${p.isHost ? ' <span class="badge">방장</span>' : ''}${p.id === me.id ? ' <span class="badge me">나</span>' : ''}</li>`);
+    for (let i = r.players.length; i < r.maxPlayers; i++) rows.push('<li class="empty">빈 자리</li>');
+    document.getElementById('players').innerHTML = rows.join('');
+  }
+  paint(room);
+
+  document.getElementById('copy').addEventListener('click', async (e) => {
+    const input = document.getElementById('link');
+    try { await navigator.clipboard.writeText(input.value); }
+    catch (err) { input.select(); document.execCommand('copy'); }
+    e.target.textContent = '복사됨!';
+    setTimeout(() => { e.target.textContent = '복사'; }, 1500);
+  });
+
+  poller = setInterval(async () => {
+    try {
+      const { room: latest } = await api(`/api/rooms/${room.code}`);
+      paint(latest);
+    } catch (e) {
+      stopPolling();
+      document.getElementById('err').textContent = e.message;
+    }
+  }, 2000);
+}
+
+function renderError(message) {
+  document.title = '너 AI지?';
+  app.innerHTML = head('앗!', message) + '<div class="card"><button id="home">새 방 만들기</button></div>';
+  document.getElementById('home').addEventListener('click', () => {
+    history.pushState({}, '', '/');
+    route();
+  });
+}
+
+async function route() {
+  stopPolling();
+  const m = location.pathname.match(/^\/invite\/([A-Za-z0-9]+)$/);
+  if (!m) return renderHome();
+  const code = m[1].toUpperCase();
+  try {
+    const { room } = await api('/api/rooms/' + code);
+    const me = loadSession(code);
+    if (me && room.players.some((p) => p.id === me.id)) return renderLobby(room, me);
+    renderJoin(room);
+  } catch (e) {
+    renderError(e.message);
+  }
+}
+
+window.addEventListener('popstate', route);
+route();
+</script>
+</body>
+</html>
