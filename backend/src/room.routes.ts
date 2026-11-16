@@ -3,7 +3,20 @@ import { Router } from 'express';
 
 const router = Router();
 export const activeRooms = new Map();
-const nicknames = ['A', 'B', 'C', 'D']; // 임의의 닉네임 리스트, 나중엔 다른 파일에 저장하는 게 좋을 것 같아요
+
+// 닉네임 및 주제를 담고있는 텍스트 파일을 불러온다
+const fs = require('fs');
+const path = require('path');
+function loadList(filename : string) {
+  const filePath = path.join(__dirname, filename);
+  return fs.readFileSync(filePath, 'utf8')
+    .split('\n')
+    .map((line: string) => line.trim())
+    .filter(Boolean); // removes empty lines
+}
+const nicknames = loadList('nicknames.txt');
+const themes = loadList('themes.txt');
+
 // POST /api/room/create
 router.post('/create', (req, res) => {
     // 1. 리퀘스트가 잘못됬으면 실패, 지금은 실패 조건 없음
@@ -19,13 +32,14 @@ router.post('/create', (req, res) => {
     const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase()
     const newRoom = {
         roomCode,
-        players: [{ id: 1, nickname, isHost: true }]
+        players: [{ id: 1, nickname, isHost: true }],
+        theme : null
     };
 
     activeRooms.set(roomCode, newRoom);
     console.log(activeRooms)
 
-    // 3. 성공 리스폰스 및 데이터 반환
+    // 3. 성공 반환
     return res.status(201).json({
         success: true,
         roomCode: newRoom.roomCode,
@@ -56,10 +70,10 @@ router.post('/join', (req, res) => {
         });
     }
 
-    // 2. 닉네임 중복 체크 후 부여, 방 맵에 추가, 성공 반환
+    // 2. 닉네임 중복 체크 후 부여 후 방 맵에 추가
     const usedNicknames = room.players.map((player: { nickname: string; }) => player.nickname);
     const takenSet = new Set(usedNicknames);
-    const availableNicknames = nicknames.filter(name => !takenSet.has(name));
+    const availableNicknames = nicknames.filter((name: string) => !takenSet.has(name));
     const nickname = availableNicknames[Math.floor(Math.random() * nicknames.length)];
     const newPlayer = {
         id: room.players.length + 1,
@@ -68,6 +82,7 @@ router.post('/join', (req, res) => {
     };
     room.players.push(newPlayer);
 
+    // 3. 성공 반환
     return res.json({
         success: true,
         players: room.players,
@@ -75,4 +90,36 @@ router.post('/join', (req, res) => {
     });
 });
 
+router.post('/theme', (req, res) => {
+    const roomCode = req.body.roomCode;
+
+    // 1. 리퀘스트에 방 코드가 없으면 실패
+    if (!roomCode) {
+        return res.status(400).json({
+            success: false,
+            error: "Room code required."
+        });
+    }
+
+    const room = activeRooms.get(roomCode);
+
+    // 1.1 방 코드가 현재 활성화된 방 리스트에 없으면 실패 
+    if (!room) {
+        return res.status(404).json({
+            success: false,
+            error: "Invalid room code or room does not exist."
+        });
+    }
+
+    // 2. 랜덤하게 주제 선정 및 저장
+    const theme = themes[Math.floor(Math.random() * themes.length)];
+    room["theme"] = theme;
+
+    // 3. 성공 반환
+    return res.json({
+        success: true,
+        theme: theme,
+        roomCode: roomCode
+    });
+});
 export default router;
