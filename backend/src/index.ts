@@ -2,6 +2,7 @@ import { createServer } from 'node:http';
 import express from 'express';
 import { Server } from 'socket.io';
 import type { ClientToServerEvents, ServerToClientEvents } from '@ai-mafia/shared';
+import { setupRooms } from './rooms/setup.js';
 
 // backend/.env를 읽는다 (없으면 기본값 사용). 실행 위치와 무관하게 이 파일 기준 경로로 찾는다.
 try {
@@ -14,6 +15,7 @@ const PORT = Number(process.env.PORT ?? 8000);
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN ?? 'http://localhost:3000';
 
 const app = express();
+setupRooms(app, { clientOrigin: CLIENT_ORIGIN }); // 방 생성 / 초대 링크 API
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
