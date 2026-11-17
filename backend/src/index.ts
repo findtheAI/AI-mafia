@@ -5,6 +5,7 @@ import { Server, Socket } from 'socket.io';
 import type { ClientToServerEvents, ServerToClientEvents } from '@ai-mafia/shared';
 import { registerChatHandlers } from './chatSocket.js';
 import { activeRooms } from './room.routes.js';
+import { registerGameHandlers } from './gameSocket.js';
 
 import cors from 'cors';
 import roomRouter from './room.routes';
@@ -58,6 +59,8 @@ io.on('connection', (socket) => {
 
   // chatSocket.ts의 채팅 관련 이벤트와 연결합니다
   registerChatHandlers(io, socket);
+  // gameSocket.ts의 게임 관련 이벤트와 연결합니다
+  registerGameHandlers(io, socket);
 
   socket.on('disconnect', () => {
     console.log(`[socket] disconnected: ${socket.id}`);

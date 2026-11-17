@@ -1,18 +1,19 @@
 // 방 생성 및 참가에 관련된 이벤트를 핸들링한다
 import { Router } from 'express';
+import type { GameState } from '@ai-mafia/shared';
+import fs from 'node:fs';
 
 const router = Router();
 export const activeRooms = new Map();
 
 // 닉네임 및 주제를 담고있는 텍스트 파일을 불러온다
-const fs = require('fs');
-const path = require('path');
-function loadList(filename : string) {
-  const filePath = path.join(__dirname, filename);
-  return fs.readFileSync(filePath, 'utf8')
-    .split('\n')
-    .map((line: string) => line.trim())
-    .filter(Boolean); // removes empty lines
+function loadList(filename: string) {
+    const filePath = new URL(`./resources/${filename}`, import.meta.url);
+
+    return fs.readFileSync(filePath, 'utf8')
+        .split('\n')
+        .map((line: string) => line.trim())
+        .filter(Boolean); // removes empty lines
 }
 const nicknames = loadList('nicknames.txt');
 const themes = loadList('themes.txt');
@@ -30,10 +31,18 @@ router.post('/create', (req, res) => {
     // 2. 방 코드 및 닉네임 생성
     const nickname = nicknames[Math.floor(Math.random() * nicknames.length)];
     const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase()
+         // 게임 초기 상태 설정
+    const gameState: GameState = {
+        phase: 'lobby',
+        phaseEndsAt: null,
+        votes: {},
+        voteCounts: {}
+    };
     const newRoom = {
         roomCode,
         players: [{ id: 1, nickname, isHost: true }],
-        theme : null
+        theme : null,
+        gameState
     };
 
     activeRooms.set(roomCode, newRoom);
@@ -122,4 +131,27 @@ router.post('/theme', (req, res) => {
         roomCode: roomCode
     });
 });
+
+// GET /api/room/:roomCode/state
+router.get('/:roomCode/state', (req, res) => {
+    const roomCode = req.params.roomCode;
+    // 1. 방 존재하는지 확인
+    const room = activeRooms.get(roomCode);
+    if (!room) {
+        return res.status(404).json({
+            success: false,
+            error: 'Room does not exist.'
+        });
+    }
+    // 2. 현재 방 상태 반환
+    return res.json({
+        success: true,
+        roomCode: room.roomCode,
+        players: room.players,
+        theme: room.theme,
+        phase: room.gameState.phase,
+        phaseEndsAt: room.gameState.phaseEndsAt
+    });
+});
+
 export default router;
