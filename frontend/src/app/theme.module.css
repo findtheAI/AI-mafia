@@ -1,0 +1,58 @@
+/* 메인/결과 화면이 같이 쓰는 색과 글꼴. Figma 와이어프레임(흰 배경, 회색 버튼, 검정 글씨)을 따른다. */
+.theme {
+  --bg: #ffffff;
+  --ink: #000000;
+  --muted: #666666;
+  --gray: #d9d9d9; /* Figma: 메인회색 */
+  --field: #f6f6f6; /* Figma: 입력칸 */
+  --danger: #c4262e;
+
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Pretendard Variable', Pretendard, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', system-ui, sans-serif;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+/* 와이어프레임의 218×54 회색 버튼 */
+.button {
+  display: block;
+  width: 218px;
+  max-width: 100%;
+  height: 54px;
+  margin: 0 auto;
+  border: 0;
+  border-radius: 0;
+  background: var(--gray);
+  color: var(--ink);
+  font: inherit;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.button:focus-visible,
+.small:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.small {
+  border: 0;
+  border-radius: 0;
+  background: var(--gray);
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.small:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

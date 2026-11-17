@@ -1,0 +1,147 @@
+.page {
+  composes: theme from './theme.module.css';
+  display: flex;
+  justify-content: center;
+}
+
+/* 와이어프레임 폭(402px)의 모바일 한 칸 */
+.frame {
+  position: relative;
+  width: 100%;
+  max-width: 402px;
+  min-height: 100dvh;
+  padding: 20px 20px 48px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  min-height: 38px;
+}
+
+/* 로그인/마이페이지는 랭킹 시스템을 쓸 때 적용(추후 검토)이라 자리만 잡아둔다. */
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 90px;
+  text-align: center;
+}
+
+.logo {
+  display: block;
+  width: 218px;
+  height: auto;
+}
+
+.title {
+  margin: 24px 0 0;
+  font-size: 48px;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  word-break: keep-all;
+}
+
+.lead {
+  margin: 24px 0 0;
+  font-size: 18px;
+  word-break: keep-all;
+}
+
+.rules {
+  margin: 96px 0 0;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+  font-size: 20px;
+}
+
+.rules li::before {
+  content: '-';
+}
+
+.start {
+  margin-top: 82px;
+}
+
+/* 방 만들기 / 코드로 참여하기 단계 */
+.back {
+  height: 29px;
+  padding: 0 6px;
+}
+
+.room {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100dvh - 68px);
+  padding-top: 40px;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.joinBlock {
+  margin-top: 24px;
+}
+
+.joinTitle {
+  margin: 0 auto;
+  display: block;
+  width: 218px;
+  height: 54px;
+  background: var(--gray);
+  font-size: 20px;
+  line-height: 54px;
+  text-align: center;
+}
+
+.codeRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 41px;
+  margin-top: 21px;
+  padding: 0 12px 0 0;
+  background: var(--field);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+
+.input::placeholder {
+  letter-spacing: 0;
+  color: var(--muted);
+}
+
+.input:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: -3px;
+}
+
+.enter {
+  width: 73px;
+  height: 28px;
+}
+
+.error {
+  min-height: 1.5em;
+  margin: 12px 0 0;
+  color: var(--danger);
+  font-size: 14px;
+  text-align: center;
+}
