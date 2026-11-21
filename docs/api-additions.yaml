@@ -6,15 +6,15 @@ info:
   title: AI Mafia API (추가분)
   version: 1.3.0-draft
 x-changes-to-existing:
-  - POST /api/room/create, POST /api/room/join 응답에 playerId 추가, join 응답에 roomCode 추가
+  - POST /api/room/create, POST /api/room/join 응답에 playerId, token 추가, join 응답에 roomCode 추가
   - 닉네임은 서버가 랜덤 배정 (방 생성 시 요청 본문 없음, 에러 예시의 "Nickname is required."는 삭제)
   - 에러 응답에 code 필드 추가 (예: ROOM_FULL). 프론트가 에러 종류별 안내 문구를 고르는 데 사용
   - POST /api/room/join 에러 추가 - 409 ROOM_FULL(정원 6명 초과), 409 ROOM_NOT_JOINABLE(이미 시작한 방)
-  - 소켓 연결 쿼리에 playerId 추가 (다시 하기로 닉네임이 바뀌어도 "나"를 찾기 위해)
+  - 소켓 연결 쿼리는 nickname 대신 token (본인에게만 주는 추측 불가능한 값. 닉네임/번호는 남도 알 수 있어 사칭이 되므로)
   - chat:recieve 오타 -> chat:receive (v1.2.0 OpenAPI 본문은 이미 receive)
 x-websocket-events:
   transport: WebSockets (/socket.io/)
-  connectionQuery: "?roomCode=방코드&nickname=닉네임&playerId=번호"
+  connectionQuery: "?roomCode=방코드&token=토큰"
   connectionRules:
     - 방 참가자가 아니면 연결이 거절되고 connect_error의 message가 에러 코드(ROOM_NOT_FOUND, NOT_A_MEMBER 등)
     - roomCode 없이 연결하는 소켓은 방과 무관한 연결로 통과 (연결 상태 확인용)

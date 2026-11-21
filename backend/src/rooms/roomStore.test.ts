@@ -155,20 +155,24 @@ test('나가기: 남은 방과 나간 사람을 돌려주고, 방이 사라지�
   assert.equal(store.leaveRoom(room.code, 1), null); // 이미 없는 방
 });
 
-test('소켓 연결 검사: playerId 또는 닉네임으로 "나"를 찾는다', () => {
+test('소켓 연결 검사: token으로만 "나"를 찾는다', () => {
   const { room, host, others } = makeRoom(3);
   const second = others[0]!;
 
-  assert.equal(store.resolveMember(room.code, undefined, String(host.id)).player.id, host.id); // 쿼리는 문자열
-  assert.equal(store.resolveMember(room.code.toLowerCase(), second.nickname, undefined).player.id, second.id);
-  // playerId가 있으면 닉네임이 달라도(다시 하기 직후 등) playerId를 믿는다
-  assert.equal(store.resolveMember(room.code, '옛날 닉네임', String(second.id)).player.id, second.id);
+  assert.match(host.token, /^[0-9a-f]{32}$/);
+  assert.notEqual(host.token, second.token);
+  assert.equal(store.resolveMember(room.code, host.token).player.id, host.id);
+  assert.equal(store.resolveMember(room.code.toLowerCase(), second.token).player.id, second.id);
+  // 방 정보에는 token이 들어가지 않는다
+  assert.equal(JSON.stringify(store.toPublicRoom(room)).includes(host.token), false);
 
-  assert.throws(() => store.resolveMember(room.code, '없는 사람', undefined), { status: 403, code: 'NOT_A_MEMBER' });
-  assert.throws(() => store.resolveMember(room.code, undefined, '999'), { code: 'NOT_A_MEMBER' });
-  assert.throws(() => store.resolveMember(room.code, undefined, undefined), { code: 'NOT_A_MEMBER' });
-  assert.throws(() => store.resolveMember(undefined, host.nickname, undefined), { code: 'ROOM_CODE_REQUIRED' });
-  assert.throws(() => store.resolveMember('NOPE22', host.nickname, undefined), { code: 'ROOM_NOT_FOUND' });
+  // 남이 알 수 있는 닉네임/번호로는 찾지 않는다
+  assert.throws(() => store.resolveMember(room.code, host.nickname), { status: 403, code: 'NOT_A_MEMBER' });
+  assert.throws(() => store.resolveMember(room.code, String(host.id)), { code: 'NOT_A_MEMBER' });
+  assert.throws(() => store.resolveMember(room.code, ''), { code: 'NOT_A_MEMBER' });
+  assert.throws(() => store.resolveMember(room.code, undefined), { code: 'NOT_A_MEMBER' });
+  assert.throws(() => store.resolveMember(undefined, host.token), { code: 'ROOM_CODE_REQUIRED' });
+  assert.throws(() => store.resolveMember('NOPE22', host.token), { code: 'ROOM_NOT_FOUND' });
 });
 
 test('소켓 연결: 첫 연결에서만 firstConnect가 true이고, 끊기면 연결 수가 줄어든다', () => {

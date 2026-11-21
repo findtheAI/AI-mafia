@@ -72,7 +72,7 @@ function setup(playerCount: number) {
   return { room, host, others };
 }
 
-const asQuery = (code: string, p: store.Player) => ({ roomCode: code, nickname: p.nickname, playerId: String(p.id) });
+const asQuery = (code: string, p: store.Player) => ({ roomCode: code, token: p.token });
 
 test('연결하면 방에 들어가고, 방 전체에 playerJoined가 간다', () => {
   const { room, host } = setup(1);
@@ -124,17 +124,24 @@ test('현재 방 상태 조회: 단계와 참가자를 준다 (AI/투표 정보�
   assert.equal(socket.call('room:getState').room.status, 'ended'); // 단계가 바뀌면 바뀐 값을 준다
 });
 
-test('명세서대로 닉네임만 보내도 연결되고, roomCode가 소문자여도 된다', () => {
+test('roomCode가 소문자여도 연결된다', () => {
   const { room, host } = setup(1);
-  const { error } = io.connect({ roomCode: room.code.toLowerCase(), nickname: host.nickname });
+  const { error } = io.connect({ roomCode: room.code.toLowerCase(), token: host.token });
   assert.equal(error, undefined);
+});
+
+test('사칭 거절: 남의 닉네임이나 playerId만으로는 연결되지 않는다', () => {
+  const { room, host } = setup(1);
+  assert.equal(io.connect({ roomCode: room.code, nickname: host.nickname }).error, 'NOT_A_MEMBER');
+  assert.equal(io.connect({ roomCode: room.code, playerId: String(host.id) }).error, 'NOT_A_MEMBER');
+  assert.equal(io.connect({ roomCode: room.code, token: 'guess' }).error, 'NOT_A_MEMBER');
 });
 
 test('연결 거절: 없는 방 / 참가자가 아님 / 방 코드 누락 중 잘못된 값', () => {
   const { room } = setup(1);
-  assert.equal(io.connect({ roomCode: 'NOPE22', nickname: 'x' }).error, 'ROOM_NOT_FOUND');
-  assert.equal(io.connect({ roomCode: room.code, nickname: '모르는 사람' }).error, 'NOT_A_MEMBER');
-  assert.equal(io.connect({ roomCode: '   ', nickname: 'x' }).error, 'ROOM_CODE_REQUIRED');
+  assert.equal(io.connect({ roomCode: 'NOPE22', token: 'x' }).error, 'ROOM_NOT_FOUND');
+  assert.equal(io.connect({ roomCode: room.code, token: '' }).error, 'NOT_A_MEMBER');
+  assert.equal(io.connect({ roomCode: '   ', token: 'x' }).error, 'ROOM_CODE_REQUIRED');
   assert.equal(io.eventsOf('room:playerJoined').length, 0);
 });
 

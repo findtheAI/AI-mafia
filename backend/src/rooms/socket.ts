@@ -83,7 +83,7 @@ export function sweepStalePlayers(io: AppServer): void {
 }
 
 export function registerRoomSocket(io: AppServer): void {
-  // 1) 연결 검사: ?roomCode=...&nickname=...&playerId=... 가 이 방의 참가자인지 확인한다.
+  // 1) 연결 검사: ?roomCode=...&token=... 가 이 방의 참가자인지 확인한다.
   //    실패하면 클라이언트는 connect_error를 받고, error.message가 에러 코드(ROOM_NOT_FOUND 등)다.
   //    roomCode 없이 연결하는 소켓(연결 상태 확인용 ping 등)은 방과 무관하므로 그대로 통과시킨다.
   io.use((socket, next) => {
@@ -93,7 +93,7 @@ export function registerRoomSocket(io: AppServer): void {
         next();
         return;
       }
-      const { room, player } = resolveMember(first(query.roomCode), first(query.nickname), first(query.playerId));
+      const { room, player } = resolveMember(first(query.roomCode), first(query.token));
       socket.data.roomCode = room.code;
       socket.data.playerId = player.id;
       next();

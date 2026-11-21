@@ -1,4 +1,4 @@
-import { randomInt } from 'node:crypto';
+import { randomBytes, randomInt } from 'node:crypto';
 import type { PublicRoom, RoomStatus } from '@ai-mafia/shared';
 import { generateNickname } from './nicknames.js';
 
@@ -7,7 +7,8 @@ import { generateNickname } from './nicknames.js';
 export type { PublicPlayer, PublicRoom, RoomStatus } from '@ai-mafia/shared';
 
 export interface Player {
-  id: number; // 방 안에서 1, 2, 3... 순서로 붙는 번호. 브라우저에 저장해두고 본인 확인에 쓴다.
+  id: number; // 방 안에서 1, 2, 3... 순서로 붙는 번호. 화면에서 "나"를 찾는 데만 쓴다. (추측 가능하므로 본인 확인용 아님)
+  token: string; // 본인 확인용 비밀 값. REST 응답으로 본인에게만 주고, 방 정보(toPublicRoom)에는 절대 넣지 않는다.
   nickname: string;
   isHost: boolean;
   joinedAt: number;
@@ -80,6 +81,7 @@ function takenNicknames(room: Room): Set<string> {
 function addPlayer(room: Room, isHost: boolean): Player {
   const player: Player = {
     id: room.nextPlayerId,
+    token: randomBytes(16).toString('hex'),
     nickname: generateNickname(takenNicknames(room)),
     isHost,
     joinedAt: Date.now(),
@@ -206,23 +208,11 @@ export function leaveRoom(rawCode: unknown, rawPlayerId: unknown): { room: Room 
   return detachPlayer(room, room.players.findIndex((p) => p.id === playerId));
 }
 
-// 소켓 연결 검사: 이 연결이 어느 방의 누구인지 찾는다. (명세서의 ?roomCode=...&nickname=...)
-// playerId가 있으면 그걸로 찾는다. 다시 하기로 닉네임이 바뀐 뒤에 재연결해도 "나"를 찾을 수 있다.
-export function resolveMember(
-  rawCode: unknown,
-  rawNickname: unknown,
-  rawPlayerId: unknown,
-): { room: Room; player: Player } {
+// 소켓 연결 검사: 이 연결이 어느 방의 누구인지 token으로 찾는다. (?roomCode=...&token=...)
+// playerId나 닉네임은 다른 사람도 알 수 있는 값이라 본인 확인에 쓰지 않는다.
+export function resolveMember(rawCode: unknown, rawToken: unknown): { room: Room; player: Player } {
   const room = getRoom(rawCode);
-
-  let player: Player | undefined;
-  const id = typeof rawPlayerId === 'string' && /^\d+$/.test(rawPlayerId) ? Number(rawPlayerId) : rawPlayerId;
-  if (typeof id === 'number' && Number.isInteger(id)) {
-    player = room.players.find((p) => p.id === id);
-  } else if (typeof rawNickname === 'string') {
-    const nickname = rawNickname.trim();
-    player = room.players.find((p) => p.nickname === nickname);
-  }
+  const player = typeof rawToken === 'string' && rawToken !== '' ? room.players.find((p) => p.token === rawToken) : undefined;
   if (!player) {
     throw new RoomError(403, 'NOT_A_MEMBER', 'You are not in this room.');
   }

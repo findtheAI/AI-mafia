@@ -45,6 +45,8 @@ test('방 생성 -> 입장: 명세서 응답 형태를 지킨다', async () => {
   assert.equal(created.json.players[0].isHost, true);
   assert.equal(created.json.players[0].nickname, created.json.nickname);
   assert.equal(typeof created.json.playerId, 'number');
+  assert.equal(typeof created.json.token, 'string');
+  assert.equal(JSON.stringify(created.json.players).includes(created.json.token), false);
 
   const joined = await post('/api/room/join', { roomCode: created.json.roomCode.toLowerCase() });
   assert.equal(joined.status, 200);

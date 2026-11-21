@@ -3,6 +3,7 @@
 export interface Session {
   roomCode: string;
   playerId: number;
+  token: string; // 소켓 연결 때 본인 확인용 비밀 값
   nickname: string;
 }
 
@@ -21,8 +22,13 @@ export function loadSession(roomCode: string): Session | null {
     const raw = sessionStorage.getItem(key(roomCode));
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<Session>;
-    if (typeof parsed.roomCode === 'string' && typeof parsed.playerId === 'number' && typeof parsed.nickname === 'string') {
-      return { roomCode: parsed.roomCode, playerId: parsed.playerId, nickname: parsed.nickname };
+    if (
+      typeof parsed.roomCode === 'string' &&
+      typeof parsed.playerId === 'number' &&
+      typeof parsed.token === 'string' &&
+      typeof parsed.nickname === 'string'
+    ) {
+      return { roomCode: parsed.roomCode, playerId: parsed.playerId, token: parsed.token, nickname: parsed.nickname };
     }
     return null;
   } catch {

@@ -10,6 +10,7 @@ export interface JoinedRoom {
   players: PublicPlayer[];
   nickname: string;
   playerId: number;
+  token: string;
 }
 
 export class ApiError extends Error {

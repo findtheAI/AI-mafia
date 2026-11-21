@@ -39,7 +39,7 @@ export default function MainPage() {
 
   // 방 만들기/입장(REST)이 끝나면 같은 방 코드로 소켓에 연결하고 대기실로 이동한다.
   function enterRoom(joined: JoinedRoom) {
-    const session = { roomCode: joined.roomCode, playerId: joined.playerId, nickname: joined.nickname };
+    const session = { roomCode: joined.roomCode, playerId: joined.playerId, token: joined.token, nickname: joined.nickname };
     saveSession(session);
     connectRoomSocket(session);
     router.push(lobbyPath(joined.roomCode));

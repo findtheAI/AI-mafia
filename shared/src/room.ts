@@ -42,12 +42,11 @@ export type SocketAck<T extends object = object> =
   | ({ success: true } & T)
   | { success: false; error: string; code: string };
 
-// 소켓 연결 때 쿼리로 보내는 값: ?roomCode=A3F9K2&nickname=졸린 펭귄&playerId=1
-// playerId는 명세서에 없는 추가 값이다. 다시 하기로 닉네임이 바뀌어도 "나"를 찾기 위해 쓴다.
+// 소켓 연결 때 쿼리로 보내는 값: ?roomCode=A3F9K2&token=...
+// token은 방 만들기/입장 응답으로 받은 본인 확인용 비밀 값이다. (명세서의 nickname 대신. 닉네임은 남도 알 수 있어서 사칭이 된다)
 export interface RoomSocketQuery {
   roomCode: string;
-  nickname: string;
-  playerId: string;
+  token: string;
 }
 
 // 서버 -> 클라이언트
