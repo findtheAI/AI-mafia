@@ -9,3 +9,4 @@ export interface ServerToClientEvents {
 export interface ClientToServerEvents {
   'client:ping': (ack: (payload: { serverTime: number }) => void) => void;
 }
+export * from './room.js';
