@@ -2,7 +2,15 @@
 import { createServer } from 'node:http';
 import express from 'express';
 import { Server, Socket } from 'socket.io';
-import type { ClientToServerEvents, ServerToClientEvents } from '@ai-mafia/shared';
+import type {
+  ClientToServerEvents,
+  RoomClientToServerEvents,
+  RoomServerToClientEvents,
+  ServerToClientEvents,
+} from '@ai-mafia/shared';
+import { registerRoomSocket } from './rooms/socket.js';
+import type { RoomSocketData } from './rooms/socket.js';
+import { setupRooms } from './rooms/setup.js';
 import { registerChatHandlers } from './chatSocket.js';
 import { activeRooms } from './room.routes.js';
 
@@ -19,21 +27,27 @@ try {
 const PORT = Number(process.env.PORT ?? 8000);
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN ?? 'http://localhost:3000';
 const app = express();
-
-// CORS 미들웨어를 사용해야될 것 같아요
-app.use(cors({ origin: CLIENT_ORIGIN }));
-app.use(express.json());
-// 방 생성/참가 관련 API 마운트
-app.use('/api/room', roomRouter);
+setupRooms(app, { clientOrigin: CLIENT_ORIGIN }); // 방 생성 / 입장 REST API
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
 const httpServer = createServer(app);
-const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
+
+const io = new Server<
+  ClientToServerEvents & RoomClientToServerEvents,
+  ServerToClientEvents & RoomServerToClientEvents,
+  Record<string, never>,
+  RoomSocketData
+>(httpServer, {
   cors: { origin: CLIENT_ORIGIN },
 });
+
+// 방 입장 검사, 방 안의 소식(room:*), 결과 조회(result:get)를 소켓에 연결한다.
+// connection 핸들러는 여러 개를 등록할 수 있어서, 아래의 기존 hello/ping이나 이후 채팅 핸들러도 그대로 동작한다.
+// (roomCode 없이 연결해도 되지만, roomCode를 보냈는데 참가자가 아니면 연결이 거절된다)
+registerRoomSocket(io);
 
 io.on('connection', (socket) => {
   console.log(`[socket] connected: ${socket.id}`);

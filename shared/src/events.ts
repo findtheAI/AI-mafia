@@ -19,3 +19,4 @@ export interface ClientToServerEvents {
   'client:ping': (ack: (payload: { serverTime: number }) => void) => void;
   'chat:send' : (payload: { sender: string, message: string, roomCode: string }) => void; // 플레이어가 서버한테 메시지를 보내는 이벤트
 }
+export * from './room.js';
