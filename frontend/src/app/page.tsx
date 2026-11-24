@@ -19,7 +19,7 @@ function normalizeCode(raw: string): string {
   return raw.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, CODE_LENGTH);
 }
 
-type Step = 'intro' | 'room'; // Figma: Main-01(소개) → Main-02(방 만들기/코드 입장)
+type Step = 'intro' | 'room'; // Figma: Main-01(소개2) → Main-02(방 만들기/코드 입장)
 
 export default function MainPage() {
   const router = useRouter();

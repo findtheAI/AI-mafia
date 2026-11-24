@@ -14,81 +14,8 @@ function loadList(filename : string) {
     .map((line: string) => line.trim())
     .filter(Boolean); // removes empty lines
 }
-const nicknames = loadList('nicknames.txt');
 const themes = loadList('themes.txt');
 
-// POST /api/room/create
-router.post('/create', (req, res) => {
-    // 1. 리퀘스트가 잘못됬으면 실패, 지금은 실패 조건 없음
-    if (false) {
-        return res.status(400).json({
-            success: false,
-            error: "Nickname is required."
-        });
-    }
-
-    // 2. 방 코드 및 닉네임 생성
-    const nickname = nicknames[Math.floor(Math.random() * nicknames.length)];
-    const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase()
-    const newRoom = {
-        roomCode,
-        players: [{ id: 1, nickname, isHost: true }],
-        theme : null
-    };
-
-    activeRooms.set(roomCode, newRoom);
-    console.log(activeRooms)
-
-    // 3. 성공 반환
-    return res.status(201).json({
-        success: true,
-        roomCode: newRoom.roomCode,
-        players: newRoom.players,
-        nickname: nickname
-    });
-});
-
-// POST /api/room/join
-router.post('/join', (req, res) => {
-    const { roomCode } = req.body;
-
-    // 1. 리퀘스트에 방 코드가 없으면 실패
-    if (!roomCode) {
-        return res.status(400).json({
-            success: false,
-            error: "Room code required."
-        });
-    }
-
-    const room = activeRooms.get(roomCode);
-
-    // 1.1 방 코드가 현재 활성화된 방 리스트에 없으면 실패 
-    if (!room) {
-        return res.status(404).json({
-            success: false,
-            error: "Invalid room code or room does not exist."
-        });
-    }
-
-    // 2. 닉네임 중복 체크 후 부여 후 방 맵에 추가
-    const usedNicknames = room.players.map((player: { nickname: string; }) => player.nickname);
-    const takenSet = new Set(usedNicknames);
-    const availableNicknames = nicknames.filter((name: string) => !takenSet.has(name));
-    const nickname = availableNicknames[Math.floor(Math.random() * nicknames.length)];
-    const newPlayer = {
-        id: room.players.length + 1,
-        nickname,
-        isHost: false
-    };
-    room.players.push(newPlayer);
-
-    // 3. 성공 반환
-    return res.json({
-        success: true,
-        players: room.players,
-        nickname: nickname
-    });
-});
 
 router.post('/theme', (req, res) => {
     const roomCode = req.body.roomCode;

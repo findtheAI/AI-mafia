@@ -1,8 +1,6 @@
 import type { Server } from 'socket.io';
 import type {
   ClientToServerEvents,
-  RoomClientToServerEvents,
-  RoomServerToClientEvents,
   ServerToClientEvents,
   SocketAck,
 } from '@ai-mafia/shared';
@@ -28,8 +26,8 @@ export interface RoomSocketData {
 
 // index.ts에서 만드는 Socket.IO 서버의 타입. (기존 이벤트 + 방 이벤트)
 export type AppServer = Server<
-  ClientToServerEvents & RoomClientToServerEvents,
-  ServerToClientEvents & RoomServerToClientEvents,
+  ClientToServerEvents,
+  ServerToClientEvents,
   Record<string, never>,
   RoomSocketData
 >;
