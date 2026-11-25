@@ -32,7 +32,6 @@ export default function WaitPage() {
 
   useEffect(() => {
     const session = loadSession(code);
-    // Opened without joining first (for example from an invite link): go join on the main page.
     if (!session || session.roomCode !== code) {
       router.replace(`/?code=${code}`);
       return;
@@ -86,23 +85,6 @@ export default function WaitPage() {
       else syncState();
     };
 
-    const onPlayers = ({ players }: { players: PublicPlayer[] }) =>
-      setRoom((prev) => (prev ? { ...prev, players, playerCount: players.length } : prev));
-
-    // "Play again": back to the waiting room with newly assigned nicknames.
-    const onReset = ({ players }: { players: PublicPlayer[] }) => {
-      const me = players.find((p) => p.id === session.playerId);
-      if (me) {
-        const updated = { ...session, nickname: me.nickname };
-        sessionRef.current = updated;
-        saveSession(updated);
-      }
-      setChatLog([]);
-      setRoom((prev) =>
-        prev ? { ...prev, status: 'waiting', players, playerCount: players.length } : prev,
-      );
-    };
-
     const onThemeUpdated = ({ newTheme }: { newTheme: string }) =>
       setRoom((prev) => (prev ? { ...prev, theme: newTheme } : prev));
 
@@ -110,9 +92,6 @@ export default function WaitPage() {
     s.on('disconnect', onDisconnect);
     s.on('chat:receive', onChat);
     s.on('room:statusChanged', onStatus);
-    s.on('room:playerJoined', onPlayers);
-    s.on('room:playerLeft', onPlayers);
-    s.on('room:reset', onReset);
     s.on('theme:updateAll', onThemeUpdated);
     setSocket(s);
     if (s.connected) syncState();
@@ -122,14 +101,10 @@ export default function WaitPage() {
       s.off('disconnect', onDisconnect);
       s.off('chat:receive', onChat);
       s.off('room:statusChanged', onStatus);
-      s.off('room:playerJoined', onPlayers);
-      s.off('room:playerLeft', onPlayers);
-      s.off('room:reset', onReset);
       s.off('theme:updateAll', onThemeUpdated);
     };
   }, [code, router]);
 
-  // Keep the newest message in view.
   useEffect(() => {
     logEnd.current?.scrollIntoView({ block: 'end' });
   }, [chatLog]);
