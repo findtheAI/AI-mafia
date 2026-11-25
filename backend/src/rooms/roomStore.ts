@@ -85,7 +85,7 @@ export function updateTheme(rawCode: string){
   const code = normalizeCode(rawCode);
   const room = getRoom(code);
   var newTheme = getTheme(); 
-  while(newTheme != room.theme){
+  while(newTheme == room.theme){
     newTheme = getTheme() // 중복이 아닐때까지 새로고침
   }
   room.theme = newTheme;

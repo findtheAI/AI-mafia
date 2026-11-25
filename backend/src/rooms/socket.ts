@@ -15,6 +15,7 @@ import {
   removeStalePlayers,
   resolveMember,
   toPublicRoom,
+  updateTheme
 } from './roomStore.js';
 import type { Player, Room } from './roomStore.js';
 
@@ -145,6 +146,11 @@ export function registerRoomSocket(io: AppServer): void {
       } catch (error) {
         console.error('[game:start] failed:', error);
       }
+    });
+
+    socket.on('theme:refresh', () => {
+      const room = updateTheme(roomCode);
+      io.to(roomCode).emit('theme:updateAll', {newTheme: room.theme})
     });
 
     // 다시 하기: 대기실로 되돌리고 닉네임을 새로 배정한다. 방 전체에 room:reset을 보낸다.
