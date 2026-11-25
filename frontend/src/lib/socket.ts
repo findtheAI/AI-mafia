@@ -1,11 +1,11 @@
 import { io } from 'socket.io-client';
 import type { Socket } from 'socket.io-client';
-import type { RoomClientToServerEvents, RoomServerToClientEvents } from '@ai-mafia/shared';
+import type { ClientToServerEvents, ServerToClientEvents } from '@ai-mafia/shared';
 import { API_URL } from './api';
 import type { Session } from './session';
 
 // 방 안의 소식을 주고받는 소켓. 이벤트 이름과 payload 타입은 shared/src/room.ts에 있다.
-export type RoomSocket = Socket<RoomServerToClientEvents, RoomClientToServerEvents>;
+export type RoomSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 
 let current: { socket: RoomSocket; roomCode: string; playerId: number } | null = null;
 

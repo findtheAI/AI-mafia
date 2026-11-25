@@ -2,17 +2,17 @@
 import type { Server, Socket } from 'socket.io';
 import type { ClientToServerEvents, ServerToClientEvents } from '@ai-mafia/shared';
 import { DISCUSSION_TIME, VOTING_TIME } from '@ai-mafia/shared';
-import { activeRooms } from './room.routes';
+import { getRoom } from './rooms/roomStore';
 import { startVotingTimer } from './voteSocket';
 
 // 게임 진행 관련 이벤트 등록
 export function registerGameHandlers(
     io: Server<ClientToServerEvents, ServerToClientEvents>,
     socket: Socket<ClientToServerEvents, ServerToClientEvents>
-){
+){// 수민아 이거 이제 작동 안되는데 좀 고쳐주라
     // 호스트가 시작 버튼 누름
     socket.on('game:start', (data) => {
-        const room = activeRooms.get(data.roomCode);
+        const room = getRoom(data.roomCode);
 
         if (!room) {
             console.log('Room does not exist.');

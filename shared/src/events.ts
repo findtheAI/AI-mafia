@@ -19,6 +19,7 @@ export interface PublicRoom {
   minPlayersToStart: number;
   playerCount: number;
   players: PublicPlayer[];
+  theme: string;
 }
 
 export type ResultWinner = 'humans' | 'ai';
@@ -71,6 +72,9 @@ export interface ServerToClientEvents {
   'vote:result': (payload: { votes: Record<number, number>, voteCounts: Record<number, number>}) => void;
   // 게임 종료 및 플레이어 정체 공개
   'game:ended': (payload: { roles: Record<number, Role> }) => void;
+
+  // 주제 새로고침 후 나머지에게 전달
+  'theme:updateAll': (payload: {newTheme: string}) => void;
 }
 
 // 클라이언트 -> 서버 (나는 누구인지는 연결할 때 이미 정해졌으므로 playerId를 따로 보내지 않는다)
@@ -91,5 +95,7 @@ export interface ClientToServerEvents {
   'game:start': (payload: { roomCode: string, playerId: number }) => void;
   // 플레이어가 투표
   'vote:submit': (payload: {roomCode: string, voterId: number, targetPlayerId: number}) => void;
-}
 
+  // 주제 리프레쉬
+  'theme:refresh': (payload: {roomCode: string, playerId: number}) => void;
+}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { SetStateAction, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { PublicPlayer, PublicRoom, RoomResult, RoomStatus } from '@ai-mafia/shared';
 import { describeCode } from '@/lib/api';
 import { HOME_PATH, lobbyPath, pathForStatus } from '@/lib/routes';
@@ -49,7 +49,7 @@ export default function ResultPage() {
     // 결과 조회: 방 상태가 ended일 때만 성공한다. (RESULT-02: 그 전에는 서버가 AI 정보를 보내지 않는다)
     const requestResult = () => {
       if (resultLoaded) return;
-      socket.emit('result:get', (res: { success: any; result: SetStateAction<RoomResult | null>; code: string; }) => {
+      socket.emit('result:get', (res) => {
         if (res.success) {
           resultLoaded = true;
           setResult(res.result);
@@ -77,7 +77,7 @@ export default function ResultPage() {
 
     // 현재 방 상태를 묻는다. 화면이 열릴 때와 (재)연결될 때마다 불러서, 끊긴 동안 놓친 소식도 맞춘다.
     const syncState = () => {
-      socket.emit('room:getState', (res: { success: any; room: PublicRoom; code: string; }) => {
+      socket.emit('room:getState', (res) => {
         if (res.success) handleRoom(res.room);
         else if (res.code === 'ROOM_NOT_FOUND') setView('gone');
         else setActionError(describeCode(res.code));
@@ -131,9 +131,9 @@ export default function ResultPage() {
     if (!session || busy) return;
     setBusy('rematch');
     setActionError('');
-    connectRoomSocket(session).emit('room:rematch', (res: { success: any; players: any[]; code: string; }) => {
+    connectRoomSocket(session).emit('room:rematch', (res) => {
       if (res.success) {
-        const me = res.players.find((p: { id: number; }) => p.id === session.playerId);
+        const me = res.players.find((p) => p.id === session.playerId);
         saveSession({ ...session, nickname: me?.nickname ?? session.nickname });
         router.replace(lobbyPath(code));
       } else {

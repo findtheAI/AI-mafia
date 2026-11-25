@@ -99,6 +99,7 @@ export function registerRoomSocket(io: AppServer): void {
       next(new Error(error instanceof RoomError ? error.code : 'INTERNAL'));
     }
   });
+  
 
   io.on('connection', (socket) => {
     const { roomCode, playerId } = socket.data;
@@ -132,6 +133,18 @@ export function registerRoomSocket(io: AppServer): void {
     // 결과 조회: 방 상태가 ended일 때만 성공한다.
     socket.on('result:get', (ack) => {
       respond(ack, () => ({ result: computeResult(getRoom(roomCode)) }));
+    });
+    // TEMP: simple game start. Moves the room to 'playing' and tells everyone.
+    // Replace with a real start (host check, min players, theme) later.
+    socket.on('game:start', () => {
+      try {
+        const room = getRoom(roomCode);
+        if (room.status !== 'waiting') return; // ignore double clicks
+        room.status = 'playing';
+        announceStatus(io, room);
+      } catch (error) {
+        console.error('[game:start] failed:', error);
+      }
     });
 
     // 다시 하기: 대기실로 되돌리고 닉네임을 새로 배정한다. 방 전체에 room:reset을 보낸다.

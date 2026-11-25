@@ -6,10 +6,7 @@ import { registerRoomSocket } from './rooms/socket.js';
 import type { RoomSocketData } from './rooms/socket.js';
 import { setupRooms } from './rooms/setup.js';
 import { registerChatHandlers } from './chatSocket.js';
-import { activeRooms } from './room.routes.js';
 import { registerGameHandlers } from './gameSocket.js';
-import cors from 'cors';
-import roomRouter from './room.routes';
 
 // backend/.env를 읽는다 (없으면 기본값 사용). 실행 위치와 무관하게 이 파일 기준 경로로 찾는다.
 try {
@@ -47,9 +44,10 @@ registerRoomSocket(io);
 io.on('connection', (socket) => {
   console.log(`[socket] connected: ${socket.id}`);
 
+  // chatSocket.ts의 채팅 관련 이벤트와 연결합니다
   registerChatHandlers(io, socket);
   // gameSocket.ts의 게임 관련 이벤트와 연결합니다
-  registerGameHandlers(io, socket);
+  //registerGameHandlers(io, socket);
 
   socket.on('disconnect', () => {
     console.log(`[socket] disconnected: ${socket.id}`);

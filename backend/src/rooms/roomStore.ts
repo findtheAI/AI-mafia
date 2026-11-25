@@ -1,6 +1,7 @@
 import { randomBytes, randomInt } from 'node:crypto';
 import type { PublicRoom, RoomStatus } from '@ai-mafia/shared';
 import { generateNickname } from './nicknames.js';
+import fs from 'node:fs'; 
 
 // 방 상태: waiting(대기실) -> playing(채팅·투표 진행) -> ended(결과 공개)
 // 상태가 바뀌면 소켓으로 room:statusChanged를 보내서 화면을 옮기게 한다. (socket.ts의 announceStatus)
@@ -32,6 +33,8 @@ export interface Room {
   votes: Record<string, string>; // 투표한 닉네임 -> 투표 받은 닉네임
   createdAt: number;
   lastActiveAt: number;
+  theme: string;
+  gameState: string;
 }
 
 export class RoomError extends Error {
@@ -66,6 +69,27 @@ function generateCode(): string {
     if (!rooms.has(code)) return code;
   }
   throw new RoomError(503, 'CODE_EXHAUSTED', 'Could not generate a room code. Try again.');
+}
+
+// 주제 파일을 읽고 랜덤하게 뽑아서 리턴하는 도우미 함수
+function getTheme() {
+  const themes = fs.readFileSync('./src/resources/themes.txt', 'utf8')
+      .split('\n')
+      .map((line: string) => line.trim())
+      .filter(Boolean);
+  return themes[Math.floor(Math.random() * themes.length)];
+}
+
+// 주제를 새로고침해주는 함수 (theme API 에 사용된다)
+export function updateTheme(rawCode: string){
+  const code = normalizeCode(rawCode);
+  const room = getRoom(code);
+  var newTheme = getTheme(); 
+  while(newTheme != room.theme){
+    newTheme = getTheme() // 중복이 아닐때까지 새로고침
+  }
+  room.theme = newTheme;
+  return room;
 }
 
 function normalizeCode(raw: unknown): string {
@@ -123,6 +147,8 @@ export function createRoom(): { room: Room; player: Player } {
     votes: {},
     createdAt: now,
     lastActiveAt: now,
+    theme: getTheme(),
+    gameState: "undecided" // 수민아 이거 좀 다시 해주라
   };
   const player = addPlayer(room, true);
   rooms.set(room.code, room);
@@ -268,6 +294,7 @@ export function toPublicRoom(room: Room): PublicRoom {
     minPlayersToStart: MIN_PLAYERS_TO_START,
     playerCount: room.players.length,
     players: room.players.map((p) => ({ id: p.id, nickname: p.nickname, isHost: p.isHost })),
+    theme: room.theme
   };
 }
 

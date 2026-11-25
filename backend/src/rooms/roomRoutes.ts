@@ -1,6 +1,6 @@
 import express from 'express';
 import type { Router } from 'express';
-import { createRoom, joinRoom, toPublicRoom } from './roomStore.js';
+import { createRoom, joinRoom, toPublicRoom, updateTheme } from './roomStore.js';
 
 interface JoinBody {
   roomCode?: unknown;
@@ -22,6 +22,7 @@ export function createRoomRouter(): Router {
       players: toPublicRoom(room).players,
       nickname: player.nickname,
       playerId: player.id,
+      theme: room.theme,
       token: player.token,
     });
   });
@@ -36,9 +37,9 @@ export function createRoomRouter(): Router {
       players: toPublicRoom(room).players,
       nickname: player.nickname,
       playerId: player.id,
+      theme: room.theme,
       token: player.token,
     });
   });
-
   return router;
 }
