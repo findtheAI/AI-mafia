@@ -1,5 +1,6 @@
-// 방 / 대기실 / 결과 화면이 쓰는 타입과 소켓 이벤트 규약.
-// 프론트와 백엔드가 같은 이름과 모양을 쓰도록 여기에 한 번만 정의한다. (런타임 의존성 없는 순수 TS)
+// Socket.IO 이벤트 타입. 프론트/백 양쪽에서 이 타입으로 소켓을 생성합니다.
+import type { GamePhase } from './game.js';
+import type { Role } from './game.js';
 
 // 방 상태: waiting(대기실) -> playing(채팅·투표 진행) -> ended(결과 공개)
 export type RoomStatus = 'waiting' | 'playing' | 'ended';
@@ -61,6 +62,15 @@ export interface ServerToClientEvents {
   'room:reset': (payload: { players: PublicPlayer[] }) => void;
   // 방 천체: 클라이언트한테 받은 메시지 재송출 
   'chat:receive': (payload: { sender: string, message: string, timestamp: string }) => void;
+
+  // 게임 단계 변경시 전체 플레이어에게 알림
+  'game:phaseChanged': (payload: { phase: GamePhase, phaseEndsAt: number | null; }) => void;
+  // 투표 정상처리됬는지 알림
+  'vote:ack': (payload: { success: boolean, error?: string }) => void;
+  // 투표 결과 전달
+  'vote:result': (payload: { votes: Record<number, number>, voteCounts: Record<number, number>}) => void;
+  // 게임 종료 및 플레이어 정체 공개
+  'game:ended': (payload: { roles: Record<number, Role> }) => void;
 }
 
 // 클라이언트 -> 서버 (나는 누구인지는 연결할 때 이미 정해졌으므로 playerId를 따로 보내지 않는다)
@@ -76,5 +86,10 @@ export interface ClientToServerEvents {
   'room:leave': (ack: (res: SocketAck) => void) => void;
   // 메시지 보내기
   'chat:send' : (payload: { sender: string, message: string, roomCode: string }) => void; // 플레이어가 서버한테 메시지를 보내는 이벤트
+
+  // 호스트가 게임 시작 버튼 누름
+  'game:start': (payload: { roomCode: string, playerId: number }) => void;
+  // 플레이어가 투표
+  'vote:submit': (payload: {roomCode: string, voterId: number, targetPlayerId: number}) => void;
 }
 
