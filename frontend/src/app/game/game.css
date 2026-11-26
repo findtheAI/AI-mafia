@@ -1,0 +1,311 @@
+
+.game-page {
+  min-height: 100vh;
+  padding: 40px 20px;
+  background: #f5f5f5;
+  color: #222;
+  font-family: Arial, sans-serif;
+}
+
+.game-container {
+  max-width: 650px;
+  margin: 0 auto;
+}
+
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.game-header h1 {
+  font-size: 28px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.game-header span {
+  color: #777;
+  font-size: 14px;
+}
+
+.game-panel {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 25px;
+}
+
+.game-panel h2 {
+  font-size: 22px;
+  margin: 0 0 20px;
+}
+
+button {
+  font-family: inherit;
+}
+
+.connect-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.connect-form input,
+.chat-form input {
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.connect-form button,
+.chat-form button {
+  padding: 12px;
+  border: none;
+  border-radius: 5px;
+  background: #ddd;
+  cursor: pointer;
+}
+
+.main-button {
+  width: 100%;
+  margin-top: 20px;
+  padding: 14px;
+  border: none;
+  border-radius: 6px;
+  background: #333;
+  color: white;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.main-button:hover {
+  background: #555;
+}
+
+.main-button:disabled {
+  background: #aaa;
+  cursor: not-allowed;
+}
+
+.notice {
+  color: #777;
+  font-size: 14px;
+  text-align: center;
+  margin: 15px 0;
+}
+
+.status-text {
+  margin-top: 15px;
+  font-size: 13px;
+  color: #777;
+}
+
+/* 대기실 */
+
+.room-info {
+  padding: 20px;
+  background: #f5f5f5;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.room-info p {
+  margin: 5px;
+  font-size: 14px;
+  color: #777;
+}
+
+.room-info strong {
+  display: block;
+  font-size: 28px;
+  letter-spacing: 3px;
+  margin: 10px 0;
+}
+
+.player-list,
+.result-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.player-row,
+.result-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.player-row small {
+  color: #888;
+}
+
+/* 토론 */
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.section-header h2 {
+  margin: 0;
+}
+
+.timer {
+  font-size: 22px;
+}
+
+.topic {
+  background: #f5f5f5;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.topic small {
+  color: #777;
+}
+
+.topic p {
+  margin: 8px 0 0;
+  font-weight: bold;
+}
+
+.chat-box {
+  height: 350px;
+  overflow-y: auto;
+  padding: 15px;
+  border: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chat-message {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+}
+
+.chat-message.mine {
+  align-items: flex-end;
+}
+
+.chat-message small {
+  color: #777;
+}
+
+.chat-bubble {
+  background: #eee;
+  padding: 10px 14px;
+  border-radius: 10px;
+  max-width: 80%;
+  overflow-wrap: anywhere;
+}
+
+.chat-message.mine .chat-bubble {
+  background: #d9d9d9;
+}
+
+.chat-form {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.chat-form input {
+  flex: 1;
+  min-width: 0;
+}
+
+.chat-form button {
+  min-width: 65px;
+}
+
+/* 투표 */
+
+.vote-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.vote-player {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.vote-player:hover {
+  background: #f5f5f5;
+}
+
+.vote-player.selected {
+  background: #eee;
+  border: 2px solid #555;
+}
+
+.vote-player:disabled {
+  cursor: not-allowed;
+}
+
+.vote-player strong {
+  font-size: 13px;
+}
+
+/* 결과 */
+
+.result-list {
+  margin: 20px 0;
+}
+
+.vote-details {
+  margin-top: 20px;
+  padding: 15px;
+  background: #f5f5f5;
+}
+
+.vote-details summary {
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.vote-details p {
+  font-size: 14px;
+  margin: 10px 0;
+}
+
+/* 모바일 */
+
+@media (max-width: 600px) {
+  .game-page {
+    padding: 20px 12px;
+  }
+
+  .game-panel {
+    padding: 18px;
+  }
+
+  .game-header h1 {
+    font-size: 24px;
+  }
+
+  .chat-box {
+    height: 300px;
+  }
+}
