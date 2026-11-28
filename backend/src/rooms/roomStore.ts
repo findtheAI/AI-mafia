@@ -31,6 +31,7 @@ export interface Room {
   // 아래 두 값은 채팅/투표 담당 코드가 채운다. 결과 API는 이 값을 읽어서 계산만 한다.
   ai: AiPlayer | null;
   votes: Record<string, string>; // 투표한 닉네임 -> 투표 받은 닉네임
+  chat: { sender: string; message: string }[]; // 이번 판 채팅 기록 (AI가 읽는다)
   createdAt: number;
   lastActiveAt: number;
   theme: string;
@@ -145,6 +146,7 @@ export function createRoom(): { room: Room; player: Player } {
     nextPlayerId: 1,
     ai: null,
     votes: {},
+    chat: [],
     createdAt: now,
     lastActiveAt: now,
     theme: getTheme(),
@@ -196,6 +198,7 @@ export function rematchRoom(
     room.status = 'waiting';
     room.ai = null;
     room.votes = {};
+    room.chat = [];
     const taken = new Set<string>();
     for (const p of room.players) {
       p.nickname = generateNickname(taken);

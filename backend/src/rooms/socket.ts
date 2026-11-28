@@ -4,6 +4,7 @@ import type {
   ServerToClientEvents,
   SocketAck,
 } from '@ai-mafia/shared';
+import { generateNickname } from './nicknames.js';
 import { computeResult } from './roomResult.js';
 import {
   RoomError,
@@ -142,6 +143,7 @@ export function registerRoomSocket(io: AppServer): void {
         const room = getRoom(roomCode);
         if (room.status !== 'waiting') return; // ignore double clicks
         room.status = 'playing';
+        room.ai = { nickname: generateNickname(new Set(room.players.map((p) => p.nickname))) }; // AI 합류
         announceStatus(io, room);
       } catch (error) {
         console.error('[game:start] failed:', error);
