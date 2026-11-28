@@ -100,6 +100,7 @@ export function startGameLogic(
     room: Room,
 ) {
     io.to(room.code).emit('game:phaseChanged', { phase: 'chat' });
+    room.gameState.phase = 'chat'
     const timer = setTimeout(() => {
         room.gameState.phase = 'vote'
         io.to(room.code).emit('game:phaseChanged', { phase: 'vote' });
