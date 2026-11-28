@@ -151,7 +151,7 @@ export function registerRoomSocket(io: AppServer): void {
     });
 
     socket.on('vote:submit', (data) => {
-        submitVote(io, data.roomCode, data.voterNickname, data.voterNickname)
+        submitVote(io, data.roomCode, data.voterNickname, data.targetPlayerNickname)
     });
     
     socket.on('chat:send', (data) => {
