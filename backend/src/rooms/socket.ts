@@ -144,7 +144,7 @@ export function registerRoomSocket(io: AppServer): void {
         if (room.status !== 'waiting') return; // ignore double clicks
         room.status = 'playing';
         announceStatus(io, room);
-        startGameLogic(io, room.code)
+        startGameLogic(io, room)
       } catch (error) {
         console.error('[game:start] failed:', error);
       }

@@ -1,6 +1,6 @@
 import { CHAT_TIME, VOTE_TIME, ClientToServerEvents, GAME_PHASES, ServerToClientEvents } from "@ai-mafia/shared";
 import { Server } from "socket.io";
-import { getRoom } from "../rooms/roomStore";
+import { getRoom, Room } from "../rooms/roomStore";
 import { announceStatus } from "../rooms/socket";
 
 const allTimers = new Map<string, ReturnType<typeof setTimeout>>();
@@ -19,17 +19,16 @@ function deleteRoomTimer(
 
 function startVoteTimer(
     io: Server<ClientToServerEvents, ServerToClientEvents>,
-    roomCode: string,
+    room: Room,
 ){
-    const room = getRoom(roomCode);
     const timer = setTimeout(() => {
         if(room.status != 'ended'){//이미 끝났으면 송출 안함
             room.status = 'ended';
             announceStatus(io, room);
         }
-        deleteRoomTimer(roomCode);
+        deleteRoomTimer(room.code);
     }, VOTE_TIME * 1000);
-    allTimers.set(roomCode, timer)
+    allTimers.set(room.code, timer)
 }
 
 export function submitVote(
@@ -98,12 +97,13 @@ export function submitVote(
 
 export function startGameLogic(
     io: Server<ClientToServerEvents, ServerToClientEvents>,
-    roomCode: string,
+    room: Room,
 ) {
-    io.to(roomCode).emit('game:phaseChanged', { phase: 'chat' });
+    io.to(room.code).emit('game:phaseChanged', { phase: 'chat' });
     const timer = setTimeout(() => {
-        io.to(roomCode).emit('game:phaseChanged', { phase: 'vote' });
-        startVoteTimer(io, roomCode);
+        room.gameState.phase = 'vote'
+        io.to(room.code).emit('game:phaseChanged', { phase: 'vote' });
+        startVoteTimer(io, room);
     }, CHAT_TIME * 1000);
-    allTimers.set(roomCode, timer);
+    allTimers.set(room.code, timer);
 }
