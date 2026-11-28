@@ -65,13 +65,9 @@ export interface ServerToClientEvents {
   'chat:receive': (payload: { sender: string, message: string, timestamp: string }) => void;
 
   // 게임 단계 변경시 전체 플레이어에게 알림
-  'game:phaseChanged': (payload: { phase: GamePhase, phaseEndsAt: number | null; }) => void;
+  'game:phaseChanged': (payload: { phase: GamePhase }) => void;
   // 투표 정상처리됬는지 알림
   'vote:ack': (payload: { success: boolean, error?: string }) => void;
-  // 투표 결과 전달
-  'vote:result': (payload: { votes: Record<number, number>, voteCounts: Record<number, number>}) => void;
-  // 게임 종료 및 플레이어 정체 공개
-  'game:ended': (payload: { roles: Record<number, Role> }) => void;
 
   // 주제 새로고침 후 나머지에게 전달
   'theme:updateAll': (payload: {newTheme: string}) => void;
@@ -92,9 +88,9 @@ export interface ClientToServerEvents {
   'chat:send' : (payload: { sender: string, message: string, roomCode: string }) => void; // 플레이어가 서버한테 메시지를 보내는 이벤트
 
   // 호스트가 게임 시작 버튼 누름
-  'game:start': (payload: { roomCode: string, playerId: number }) => void;
+  'game:start': (payload: { roomCode: string }) => void;
   // 플레이어가 투표
-  'vote:submit': (payload: {roomCode: string, voterId: number, targetPlayerId: number}) => void;
+  'vote:submit': (payload: {roomCode: string, voterNickname: string, targetPlayerNickname: string}) => void;
 
   // 주제 리프레쉬
   'theme:refresh': (payload: {roomCode: string, playerId: number}) => void;

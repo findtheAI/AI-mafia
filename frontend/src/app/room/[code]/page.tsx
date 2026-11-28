@@ -128,7 +128,7 @@ export default function WaitPage() {
   // The server changes the status and announces it with room:statusChanged; nothing moves locally.
   const startGame = () => {
     if (!socket || !session || !isHost) return;
-    socket.emit('game:start', { roomCode: session.roomCode, playerId: session.playerId });
+    socket.emit('game:start', { roomCode: session.roomCode });
   };
 
   const refreshTheme = () => {

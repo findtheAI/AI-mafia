@@ -18,7 +18,8 @@ import {
   updateTheme
 } from './roomStore.js';
 import type { Player, Room } from './roomStore.js';
-
+import { startGameLogic, submitVote } from '../game/gameLogic.js';
+import { CHAT_TIME, GAME_PHASES, GamePhase } from '@ai-mafia/shared';
 // 소켓 하나(= 연결 하나)에 붙여두는 정보: 이 연결이 어느 방의 누구인지
 export interface RoomSocketData {
   roomCode?: string;
@@ -143,9 +144,23 @@ export function registerRoomSocket(io: AppServer): void {
         if (room.status !== 'waiting') return; // ignore double clicks
         room.status = 'playing';
         announceStatus(io, room);
+        startGameLogic(io, room.code)
       } catch (error) {
         console.error('[game:start] failed:', error);
       }
+    });
+
+    socket.on('vote:submit', (data) => {
+        submitVote(io, data.roomCode, data.voterNickname, data.voterNickname)
+    });
+    
+    socket.on('chat:send', (data) => {
+      console.log(data.message);
+      io.to(data.roomCode).emit('chat:receive', {
+        sender: data.sender,
+        message: data.message,
+        timestamp: new Date().toISOString()
+      });
     });
 
     socket.on('theme:refresh', () => {

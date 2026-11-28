@@ -1,5 +1,5 @@
 import { randomBytes, randomInt } from 'node:crypto';
-import type { PublicRoom, RoomStatus } from '@ai-mafia/shared';
+import type { GamePhase, GameState, PublicRoom, RoomStatus } from '@ai-mafia/shared';
 import { generateNickname } from './nicknames.js';
 import fs from 'node:fs'; 
 
@@ -34,7 +34,7 @@ export interface Room {
   createdAt: number;
   lastActiveAt: number;
   theme: string;
-  gameState: string;
+  gameState: GameState;
 }
 
 export class RoomError extends Error {
@@ -138,6 +138,14 @@ function requireMember(room: Room, rawPlayerId: unknown): Player {
 // 방 만들기: 만든 사람이 방장으로 들어가고, 닉네임은 서버가 정해준다.
 export function createRoom(): { room: Room; player: Player } {
   const now = Date.now();
+  const defaultPhase: GamePhase = 'wait'
+  const votesRecord: Record<string, string> = {}
+  const gameState: GameState = {
+    phase: defaultPhase,
+    phaseEndsAt: null,
+    votes: votesRecord,
+  }
+  
   const room: Room = {
     code: generateCode(),
     status: 'waiting',
@@ -148,7 +156,7 @@ export function createRoom(): { room: Room; player: Player } {
     createdAt: now,
     lastActiveAt: now,
     theme: getTheme(),
-    gameState: "undecided" // 수민아 이거 좀 다시 해주라
+    gameState: gameState,
   };
   const player = addPlayer(room, true);
   rooms.set(room.code, room);
@@ -294,7 +302,7 @@ export function toPublicRoom(room: Room): PublicRoom {
     minPlayersToStart: MIN_PLAYERS_TO_START,
     playerCount: room.players.length,
     players: room.players.map((p) => ({ id: p.id, nickname: p.nickname, isHost: p.isHost })),
-    theme: room.theme
+    theme: room.theme,
   };
 }
 
